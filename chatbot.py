@@ -4,7 +4,7 @@ import tensorflow as tf
 import keras
 import json
 
-
+numpy.set_printoptions(suppress=True)
 with open("intents.json") as f:
     data = json.load(f)
 
@@ -47,7 +47,6 @@ for x, sentence in enumerate(x_all):
             bag.append(0)
 
     output_row = out_empty[:]
-
     output_row[labels.index(labels_all[x])] = 1
 
     train_x.append(bag)
@@ -56,3 +55,13 @@ for x, sentence in enumerate(x_all):
 train_x = numpy.asarray(train_x)
 train_y = numpy.asarray(train_y)
 
+
+model = keras.models.Sequential()
+model.add(keras.layers.Dense(32, input_shape=[len(words)]))
+model.add(keras.layers.Dense(32))
+model.add(keras.layers.Dense(len(labels), activation=tf.nn.softmax))
+
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+model.fit(train_x, train_y, epochs=100, batch_size=8)
