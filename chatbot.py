@@ -23,7 +23,6 @@ for intent in data["intents"]:
     if intent['tag'] not in labels:
         labels.append(intent['tag'])
 
-
 words = [word.lower() for word in words]
 
 ps = nltk.stem.PorterStemmer()
@@ -55,13 +54,39 @@ for x, sentence in enumerate(x_all):
 train_x = numpy.asarray(train_x)
 train_y = numpy.asarray(train_y)
 
-
 model = keras.models.Sequential()
 model.add(keras.layers.Dense(32, input_shape=[len(words)]))
 model.add(keras.layers.Dense(32))
 model.add(keras.layers.Dense(len(labels), activation=tf.nn.softmax))
 
-
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 model.fit(train_x, train_y, epochs=100, batch_size=8)
+
+
+def clean_up_sentences(sent):
+    sent = nltk.wordpunct_tokenize(sent)
+    print(sent)
+    sent = [ps.stem(word.lower()) for word in sent]
+
+    return sent
+
+def sentence_coding(sent, bag_of_words):
+    coded_sentence = []
+    for word in bag_of_words:
+        if word in sent:
+            coded_sentence.append(1)
+        else:
+            coded_sentence.append(0)
+
+    return coded_sentence
+
+
+
+
+x = clean_up_sentences("how old are u?")
+d = sentence_coding(x, words)
+d = numpy.asarray(d)
+d = d.reshape(1, 48)
+print(model.predict(d))
+print(labels)
