@@ -29,7 +29,7 @@ ps = nltk.stem.PorterStemmer()
 words = [ps.stem(word) for word in words]
 
 words = sorted(list(set(words)))
-labels = sorted(labels)
+
 
 train_x = []
 train_y = []
@@ -61,15 +61,15 @@ model.add(keras.layers.Dense(len(labels), activation=tf.nn.softmax))
 
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.fit(train_x, train_y, epochs=100, batch_size=8)
+model.fit(train_x, train_y, epochs=1000, batch_size=8)
 
 
 def clean_up_sentences(sent):
     sent = nltk.wordpunct_tokenize(sent)
-    print(sent)
     sent = [ps.stem(word.lower()) for word in sent]
 
     return sent
+
 
 def sentence_coding(sent, bag_of_words):
     coded_sentence = []
@@ -83,10 +83,17 @@ def sentence_coding(sent, bag_of_words):
 
 
 
+print("Start to talk:")
 
-x = clean_up_sentences("how old are u?")
-d = sentence_coding(x, words)
-d = numpy.asarray(d)
-d = d.reshape(1, 48)
-print(model.predict(d))
-print(labels)
+for i in range(10):
+    p = input()
+    x = clean_up_sentences(p)
+    d = sentence_coding(x, words)
+    d = numpy.asarray(d)
+    d = d.reshape(1, 50)
+
+    w = int(numpy.argmax(model.predict(d), axis=1))
+
+    for i,p in enumerate(data["intents"]):
+        if i == w:
+            print(p["responses"][0])
