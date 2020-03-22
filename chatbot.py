@@ -1,12 +1,13 @@
 import nltk
-import numpy
+import numpy as np
 import tensorflow as tf
 import keras
 import json
+from keras.models import load_model
 
-numpy.set_printoptions(suppress=True)
-with open("intents.json") as f:
-    data = json.load(f)
+np.set_printoptions(suppress=True)
+with open("intents.json") as file:
+    data = json.load(file)
 
 words = []
 labels = []
@@ -30,13 +31,12 @@ words = [ps.stem(word) for word in words]
 
 words = sorted(list(set(words)))
 
-
 train_x = []
 train_y = []
 
 out_empty = [0] * len(labels)
 
-for x, sentence in enumerate(x_all):
+for i, sentence in enumerate(x_all):
     bag = []
     stem_sent = [ps.stem(w.lower()) for w in sentence]
     for w in words:
@@ -46,22 +46,27 @@ for x, sentence in enumerate(x_all):
             bag.append(0)
 
     output_row = out_empty[:]
-    output_row[labels.index(labels_all[x])] = 1
+    output_row[labels.index(labels_all[i])] = 1
 
     train_x.append(bag)
     train_y.append(output_row)
 
-train_x = numpy.asarray(train_x)
-train_y = numpy.asarray(train_y)
+train_x = np.asarray(train_x)
+train_y = np.asarray(train_y)
 
-model = keras.models.Sequential()
-model.add(keras.layers.Dense(32, input_shape=[len(words)]))
-model.add(keras.layers.Dense(32))
-model.add(keras.layers.Dense(len(labels), activation=tf.nn.softmax))
+try:
+    model = load_model("model.h5")
+except:
+    model = keras.models.Sequential()
+    model.add(keras.layers.Dense(32, input_shape=[len(words)]))
+    model.add(keras.layers.Dense(32))
+    model.add(keras.layers.Dense(len(labels), activation="softmax"))
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.fit(train_x, train_y, epochs=1000, batch_size=8)
+    model.fit(train_x, train_y, epochs=1000, batch_size=8)
+
+    model.save("model.h5")
 
 
 def clean_up_sentences(sent):
@@ -79,21 +84,25 @@ def sentence_coding(sent, bag_of_words):
         else:
             coded_sentence.append(0)
 
-    return coded_sentence
+    return np.asarray(coded_sentence)
 
 
+def chat():
+    print("Start to talk:")
+    for i in range(100):
+        human_sentence = input()
+        human_sentence = clean_up_sentences(human_sentence)
+        d = sentence_coding(human_sentence, words)
+        d = d.reshape(1, len(words))
+        best_answer = int(np.argmax(model.predict(d), axis=1))
 
-print("Start to talk:")
+        for i, intent in enumerate(data["intents"]):
+            if i == best_answer:
+                answers = intent["responses"]
+                random_answer = np.random.choice(answers)
+                print(random_answer)
 
-for i in range(10):
-    p = input()
-    x = clean_up_sentences(p)
-    d = sentence_coding(x, words)
-    d = numpy.asarray(d)
-    d = d.reshape(1, 50)
 
-    w = int(numpy.argmax(model.predict(d), axis=1))
+if __name__ == "__main__":
+    chat()
 
-    for i,p in enumerate(data["intents"]):
-        if i == w:
-            print(p["responses"][0])
