@@ -6,7 +6,7 @@ import json
 from keras.models import load_model
 
 np.set_printoptions(suppress=True)
-with open("intents.json") as file:
+with open("data.json") as file:
     data = json.load(file)
 
 words = []
@@ -28,8 +28,7 @@ words = [word.lower() for word in words]
 
 ps = nltk.stem.PorterStemmer()
 words = [ps.stem(word) for word in words]
-
-words = sorted(list(set(words)))
+words = list(set(words))
 
 train_x = []
 train_y = []
@@ -55,7 +54,7 @@ train_x = np.asarray(train_x)
 train_y = np.asarray(train_y)
 
 try:
-    model = load_model("model.h5")
+    model = load_model("model1.h5")
 except:
     model = keras.models.Sequential()
     model.add(keras.layers.Dense(32, input_shape=[len(words)]))
@@ -64,7 +63,7 @@ except:
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    model.fit(train_x, train_y, epochs=1000, batch_size=8)
+    model.fit(train_x, train_y, epochs=2000, batch_size=8)
 
     model.save("model.h5")
 
