@@ -54,7 +54,7 @@ train_x = np.asarray(train_x)
 train_y = np.asarray(train_y)
 
 try:
-    model = load_model("model1.h5")
+    model = load_model("model.h5")
 except:
     model = keras.models.Sequential()
     model.add(keras.layers.Dense(32, input_shape=[len(words)]))
