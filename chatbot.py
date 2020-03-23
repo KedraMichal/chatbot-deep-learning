@@ -24,8 +24,8 @@ for intent in data["intents"]:
     if intent['tag'] not in labels:
         labels.append(intent['tag'])
 
-words = [word.lower() for word in words]
 
+words = [word.lower() for word in words]
 ps = nltk.stem.PorterStemmer()
 words = [ps.stem(word) for word in words]
 words = list(set(words))
