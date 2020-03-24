@@ -94,12 +94,16 @@ def chat():
         d = sentence_coding(human_sentence, words)
         d = d.reshape(1, len(words))
         best_answer = int(np.argmax(model.predict(d), axis=1))
+        best_value = max(np.max(model.predict(d), axis=1))
 
-        for i, intent in enumerate(data["intents"]):
-            if i == best_answer:
-                answers = intent["responses"]
-                random_answer = np.random.choice(answers)
-                print(random_answer)
+        if best_value > 0.9:
+            for i, intent in enumerate(data["intents"]):
+                if i == best_answer:
+                    answers = intent["responses"]
+                    random_answer = np.random.choice(answers)
+                    print(random_answer)
+        else:
+            print("I don't know the answer")
 
 
 if __name__ == "__main__":
